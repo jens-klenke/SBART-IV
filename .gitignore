@@ -50,3 +50,8 @@ rsconnect/
 
 # folder with data or results
 00_sim_data/
+
+## renv lock file
+renv/library/
+renv/python/
+renv/staging/
