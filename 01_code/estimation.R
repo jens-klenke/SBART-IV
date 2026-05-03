@@ -35,11 +35,11 @@ data <- tibble::tibble(
   dplyr::mutate(row_num =
                   glue::glue("{dplyr::row_number(.)} of {max(dplyr::row_number(.))}"))
 
+# tries
 data %<>%
-  dplyr::slice_sample(n = 5)
+  dplyr::slice_sample(n = 4)
 
 #### Estimation ----
-
 sim_results <- data %>%
   dplyr::mutate(furrr::future_pmap_dfr(., wrapper_function, 
                                        .progress = TRUE,

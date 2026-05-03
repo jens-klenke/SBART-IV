@@ -138,6 +138,8 @@ heterogeneous_treatment_estimation <- function(
     dplyr::mutate(
       # Detection and False Detection on subgroup level
       rule_det = ifelse(node_subgroup %in% c('l2', 'l1') & leaves, 1, 0),
+      rule_det_l1 = ifelse(node_subgroup %in% c('l1') & leaves, 1, 0),
+      rule_det_l2 = ifelse(node_subgroup %in% c('l2') & leaves, 1, 0),
       rule_false_det = ifelse(!node_subgroup %in% c('l2', 'l1') & significant & leaves,  1, 0))
   
   # Rules results ----
@@ -149,6 +151,10 @@ heterogeneous_treatment_estimation <- function(
       n_leave = sum(leaves),
       # Detected subgroups
       rule_det = sum(rule_det),
+      # Detected subgroup l1
+      rule_det_l1 = sum(rule_det_l1),
+      # Detected subgroup l2
+      rule_det_l2 = sum(rule_det_l2),
       # Indicator function if a false subgroup has a positive coefficient
       rule_false_det = sum(rule_false_det) > 0
     )

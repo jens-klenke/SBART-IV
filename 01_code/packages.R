@@ -1,4 +1,5 @@
 # packages
+if (!require("pak")) install.packages("pak")
 if (!require("pacman")) install.packages("pacman")
 
 # Github packages 
@@ -9,6 +10,8 @@ if (!require("BayesIV")) pak::pak("fbargaglistoffi/BCF-IV")
 pacman::p_load(
   tibble,
   ggplot2,
+  here,
+  readr,
   furrr,
   Hmisc,
   magrittr,
@@ -33,7 +36,6 @@ pacman::p_load(
   devtools,
   SoftBart,
   brms,
-  tikzDevice,
   cowplot,
   glue,
   patchwork,
@@ -41,6 +43,5 @@ pacman::p_load(
   # Algorithms 
   BayesIV,
   SparseBCF
-  
 )
 

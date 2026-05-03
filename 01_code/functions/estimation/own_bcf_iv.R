@@ -40,8 +40,8 @@ own_bcf_iv <- function(y, w, z, x, tau_true, w1, w0, binary = FALSE, n_burn = 30
         x1 == 1 & x2 == 1 ~ max(tau_true)*-1,
         .default = 0),
       real_subgroup = dplyr::case_when(
-        x1 == 0 & x2 == 0 ~ 'pos',
-        x1 == 1 & x2 == 1 ~ 'neg',
+        x1 == 0 & x2 == 0 ~ 'l2',
+        x1 == 1 & x2 == 1 ~ 'l1',
         .default = NA_character_)
     )
   
