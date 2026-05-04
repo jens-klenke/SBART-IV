@@ -13,4 +13,4 @@ invisible(
 
 
 # running summarize function
-MCMC_summarise("02_sim_results", "corr", "co.0.5")
+MCMC_summarise("02_sim_results", "corr", "co.0.75")

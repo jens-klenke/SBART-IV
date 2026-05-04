@@ -1,19 +1,5 @@
 # summarise wrapper to clean memory after the analysis
-MCMC_summarise <- function(path, case, compliance, n_case = "n_2000", M = 500,
-                           reest_step_3 = FALSE, verbose = TRUE, 
-                           parallel = FALSE, n_cores = 'default', ...) {
-  
-  # parallel plan
-  if(parallel){
-    if(n_cores == 'default'){
-      parallel::detectCores()*0.5
-    } else {
-      if (!is.numeric(n_cores)) {
-        stop(glue::glue("❌{crayon::yellow('n_cores')} must either be set to 'default' or be of class numeric"))
-      }
-    }
-    future::plan(multisession, workers = n_cores)
-  }
+MCMC_summarise <- function(path, case, compliance, n_case = "n_1000", M = 500, ...) {
   
   # Function parameters
   # case - corr or uncorr
@@ -25,17 +11,14 @@ MCMC_summarise <- function(path, case, compliance, n_case = "n_2000", M = 500,
   options(dplyr.summarise.inform = FALSE)
   
   # calling the summarise function itself
-  summarise_case_data(path, case, compliance, n_case, M = M, verbose = verbose,
-                      reest_step_3 = reest_step_3, parallel = parallel)
+  summarise_case_data(path, case, compliance, n_case, M = M)
   
   # clean up memory
   invisible(gc(verbose = FALSE))
 }
 
 # summarize per case
-summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 500, 
-                                reest_step_3 = FALSE, verbose = TRUE, 
-                                parallel = FALSE, ...) {
+summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 500, ...) {
   
   # Function parameters
   # case - corr or uncorr
@@ -53,14 +36,15 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
   # load data files -----
   # path to sim_reuslts
   sim_result_path <- here::here(path, case, compliance)
+  sim_result_path <- here::here(path) # How to store results hier? 
   
   if(verbose){
-    cat('\n\n Setting / Analysis of: \n
+    cat(
+    '\n\n Setting / Analysis of: \n
           Data path:', crayon::yellow(sim_result_path), '\n',
-        '\t\t Case:', crayon::blue(case), '\n', 
-        '\t\t Compliance:', crayon::blue(compliance_number), '\n',
-        '\t\t Observations per MCMC run:', crayon::blue(n),
-        ifelse(reest_step_3, paste0('\n\n\t\t\t', crayon::yellow('Reestimating subgroup complier effects'), '\n\n\n'), '\n\n\n'))
+    '\t\t Case:', crayon::blue(case), '\n',
+    '\t\t Compliance:', crayon::blue(compliance_number), '\n',
+    '\t\t Observations per MCMC run:', crayon::blue(n), '\n\n\n')
   }
   
   # get files
@@ -96,18 +80,6 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
     # stacking models 
     tidyr::pivot_longer(c(sbcf_iv, bcf_iv), names_to = 'model', values_to = 'results')
   
-  # re estimating stage 3
-#  if(reest_step_3){
-#    if(parallel){
-#      data_long %<>%
-#        dplyr::mutate(results = furrr::future_pmap(., post_processing, .progress = TRUE))
-#    }
-#    if(!parallel){
-#      data_long %<>%
-#        dplyr::mutate(results = purrr::pmap(., post_processing, .progress = TRUE))
-#    }
-#  }
-  
   ## unnest results
   data_long %<>%
     dplyr::select(-path_in) %>%
@@ -134,7 +106,7 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
   # subgroup metrics ----
   data_ind <- data_long %>%
     dplyr::select(effect,  ncov, model, dataset_num, individual_results) %>%
-    tidyr::unnest(individual_results) 
+    tidyr::unnest(individual_results)
   
   # Individual classification metrics 
   ind_clf_metrics <- data_ind %>%
@@ -155,8 +127,8 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
       F_score = TP / (TP + 0.5 * (FP + FN))
     ) %>%
     dplyr::mutate(
-      Precision = ifelse(is.nan(Precision), 0, Precision), #! How to handel NaNs?, here set to 0 as the Precision is 0
-      Recall = ifelse(is.nan(Recall), NA, Recall) #!  How to handel NaNs? here set to NA, no information how well we recall
+      Precision = ifelse(is.nan(Precision), 0, Precision), 
+      Recall = ifelse(is.nan(Recall), NA, Recall)
     ) %>%
     # summary for each effect/ ncov case 
     dplyr::group_by(model, ncov, effect) %>%
@@ -173,24 +145,9 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
     )
   
   # score functions ----
-  subgroup_data <- data_ind %>%
-    # just treated subgroups
-    dplyr::filter(!is.na(real_subgroup)) %>%
-    # set coverage to FALSE for groups without an estimand (estimation problems)
-    dplyr::mutate(coverage = replace_na(coverage, FALSE))
-  
-  # over all treated subgroups
-  subgroup_data_metrics <- subgroup_data %>%
-    dplyr::group_by(model, ncov, effect, dataset_num) %>%
-    # summaries each MCMC run 
-    dplyr::summarise(
-      # cace_ef -> Effect under compliance
-      PEHE = mean((cace_ef - tau_pred)^2, na.rm = TRUE),
-      bias = mean((cace_ef - tau_pred), na.rm = TRUE),
-      abs_bias = mean(abs(cace_ef - tau_pred), na.rm = TRUE),
-      coverage = mean(coverage),
-      conf_width = mean(conf_width, na.rm = TRUE)
-    )
+  subgroup_data_metrics <- data_long %>%
+    dplyr::select(effect,  ncov, model, dataset_num, subgroup_data_metrics) %>%
+    tidyr::unnest(subgroup_data_metrics)
   
   # Metric
   subgroup_metrics <- subgroup_data_metrics %>%
@@ -208,16 +165,9 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
     )
   
   # separated for each subgroup ----
-  subgroup_sep_data <- subgroup_data %>%
-    dplyr::group_by(real_subgroup, model, ncov, effect, dataset_num) %>%
-    dplyr::summarise(
-      # cace_ef -> Effect under compliance
-      PEHE = mean((cace_ef - tau_pred)^2, na.rm = TRUE),
-      bias = mean((cace_ef - tau_pred), na.rm = TRUE),
-      abs_bias = mean(abs(cace_ef - tau_pred), na.rm = TRUE),
-      coverage = mean(coverage),
-      conf_width = mean(conf_width, na.rm = TRUE)
-    )
+  subgroup_sep_data <- data_long %>%
+    dplyr::select(effect,  ncov, model, dataset_num, subgroup_sep_data) %>%
+    tidyr::unnest(subgroup_sep_data)
   
   # Metric
   subgroup_sep_metrics <- subgroup_sep_data %>%
@@ -236,7 +186,7 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
   
   # saving data
   save(rules_metric, ind_clf_metrics, subgroup_metrics, subgroup_sep_metrics,
-       file = here::here(glue::glue('03_sim_eval/{n_case}/{compliance}_{case}.RData')))
+       file = here::here(glue::glue('03_sim_eval/{n_case}_{compliance}_{case}.RData')))
   
   if(verbose){
     # safe information
@@ -247,7 +197,5 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_2000", M = 5
   }
 }
 
-
-# (removed stray "glue" token here)
 # make pipe visible to linters / R CMD check
 `%>%` <- magrittr::`%>%`

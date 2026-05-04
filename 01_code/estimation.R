@@ -19,7 +19,6 @@ future::plan(multisession, workers = floor(parallel::detectCores()* 0.5))
 sim_data_path <- "00_sim_data" # use
 
 # identification function to filter sim_data?
-# avoiding saving?
 
 # preparing  ----
 data <- tibble::tibble(
@@ -27,7 +26,7 @@ data <- tibble::tibble(
     path_in = list.files(sim_data_path, recursive = TRUE, full.names = TRUE)
   ) %>%
     # filter for desired setting
-    dplyr::filter(str_detect(path_in, 'ef.0.4_co.0.75_baseline.ef_uncorrelated__')) %>%
+    dplyr::filter(str_detect(path_in, 'ef.2_co.0.75_baseline.ef_uncorrelated__')) %>%
     dplyr::mutate(ncov = readr::parse_number(stringr::str_extract(
       path_in,
       pattern = 'ncov.[0-9]*'),
@@ -45,6 +44,7 @@ sim_results <- data %>%
                                        .progress = TRUE,
                                        .options = furrr_options(seed = TRUE)))
 
+save(sim_results, file = "02_sim_results\\ef.2_co.0.75_uncorr.RData")
 # save(sim_results, file = "03_output\\ef.0.4_co.0.75_corr.RData")
 
 # clean up ---

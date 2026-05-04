@@ -18,6 +18,7 @@ pacman::p_load(
   MASS,
   stats,
   invgamma,
+  AER,
   splines,
   MCMCpack,
   BayesTree,

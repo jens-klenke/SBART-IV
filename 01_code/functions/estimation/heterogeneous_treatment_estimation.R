@@ -6,7 +6,6 @@ heterogeneous_treatment_estimation <- function(
   rules <- as.numeric(row.names(fit.tree$frame[fit.tree$numresp]))
   
   # Initialize Outputs # NEW
-  # Initialize Outputs # NEW
   bcfivMat <- tibble::tibble(
     "node" = rep(NA_character_, length(rules)),
     "est_problems" = rep(NA_character_, length(rules)),
@@ -160,14 +159,14 @@ heterogeneous_treatment_estimation <- function(
     )
   
   # Individual results in leaves ----
-  individual_results <- ivResults %>%
+  data_ind <- ivResults %>%
     # filter for leaves
     dplyr::filter(leaves == TRUE) %>%
     dplyr::select(-c(node_abs_bias, rule_det, rule_false_det)) %>%
     tidyr::unnest(pred)
   
   # determine TP, FN, FP, TN
-  individual_results %<>%
+  individual_results <- data_ind %>%
     dplyr::mutate(
       # True Positive but TP is determined based on x1 and x2, not the rule itself
       TP = dplyr::case_when(
@@ -227,13 +226,44 @@ heterogeneous_treatment_estimation <- function(
       bias_rm = mean((tau_true - cace_ef), na.rm = TRUE),
       abs_bias_rm = mean(abs(tau_true - cace_ef), na.rm = TRUE)
     )
- 
+  
+  # score functions ----
+  subgroup_data <- data_ind %>%
+    # just treated subgroups
+    dplyr::filter(!is.na(real_subgroup)) %>%
+    # set coverage to FALSE for groups without an estimand (estimation problems)
+    dplyr::mutate(coverage = replace_na(coverage, FALSE))
+  
+  # over all treated subgroups
+  subgroup_data_metrics <- subgroup_data %>%
+    dplyr::summarise(
+      # cace_ef -> Effect under compliance
+      PEHE = mean((cace_ef - tau_pred)^2, na.rm = TRUE),
+      bias = mean((cace_ef - tau_pred), na.rm = TRUE),
+      abs_bias = mean(abs(cace_ef - tau_pred), na.rm = TRUE),
+      coverage = mean(coverage),
+      conf_width = mean(conf_width, na.rm = TRUE))
+
+  # separated for each subgroup ----
+  subgroup_sep_data <- subgroup_data %>%
+    dplyr::group_by(real_subgroup) %>%
+    dplyr::summarise(
+      # cace_ef -> Effect under compliance
+      PEHE = mean((cace_ef - tau_pred)^2, na.rm = TRUE),
+      bias = mean((cace_ef - tau_pred), na.rm = TRUE),
+      abs_bias = mean(abs(cace_ef - tau_pred), na.rm = TRUE),
+      coverage = mean(coverage),
+      conf_width = mean(conf_width, na.rm = TRUE)
+    )
+
   #### Return Results ####
   return(
     tibble::tibble(
       'ivResults' = list(ivResults), 
       'rule_results' = list(rule_results),
-      'individual_results' = list(individual_results)
+      'individual_results' = list(individual_results),
+      'subgroup_data_metrics' = list(subgroup_data_metrics),
+      'subgroup_sep_data' = list(subgroup_sep_data)
     )
   )
 }
