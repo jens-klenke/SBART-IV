@@ -2,7 +2,8 @@
 if (!require("pak")) install.packages("pak")
 if (!require("pacman")) install.packages("pacman")
 
-# Github packages 
+# Github packages
+if (!require("bcf")) pak::pak("jaredsmurray/bcf")
 if (!require("SparseBCF")) pak::pak("albicaron/SparseBCF")
 if (!require("BayesIV")) pak::pak("fbargaglistoffi/BCF-IV")
 
