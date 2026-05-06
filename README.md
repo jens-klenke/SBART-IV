@@ -38,6 +38,7 @@ Moreover, the folder `01_code` holds a script for each empirical application:
 - `emp_appl_OHIE.R` for the application based on the Oregon Health Insurance Experiment dataset (Johnson et al. 2022)
 - `emp_appl_401k.R` for the application based on the 401(k) dataset (Chernozhukov et al. 2018)
 
-
+Note that for the empirical application based on the Oregon Health Insurance Experiment dataset, you need to download the respective datasets beforehand as specified in the script.
+For the application based on the 401(k) dataset, data is fetched from the `DoubleML` package.
 
 
