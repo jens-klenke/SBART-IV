@@ -1,13 +1,15 @@
 #'
 #'
 wrapper_data_generation <- function(
-    path, H = 500, n = 1000, p_vec, covariates, uncorrelated, effect_size_vec,
-    baseline_effect, compliance = 0.75, confounded, ..) {
+    path, H = 500, n = 1000, p_vec, compliance = 0.75, 
+    uncorrelated = TRUE, effect_size_vec = seq(0, 2, .2),
+    baseline_effect = TRUE, confounded = FALSE, covariates = 'cont-cov',  ..) {
   
   # function head 
   baseline <- ifelse(baseline_effect, 'baseline.ef', 'no.baseline.ef')
   uncorrelated_data <- ifelse(uncorrelated, 'uncorrelated', 'correlated')
   conf  <- ifelse(confounded, 'confounded', '')
+  n_folder <- glue::glue("n_{n}")
   
   
   for (j in seq_along(effect_size_vec)) {
@@ -16,7 +18,7 @@ wrapper_data_generation <- function(
     effect_size <- effect_size_vec[j]
     
     # start finished data for effect size
-    cat(glue::glue("Starting data simulation for effect size {effect_size}. \n"))
+    cat(glue::glue("Starting data simulation for effect size {effect_size}. \n\n"))
   
     for (i in seq_along(p_vec)) {
       # get number of covvariates  
@@ -24,6 +26,7 @@ wrapper_data_generation <- function(
       
       # folder path 
       folder_path <- paste0(path,
+                            '\\', n_folder, 
                             '\\effect_', effect_size,
                             '\\compliance.', compliance, '\\',
                             uncorrelated_data, '\\',

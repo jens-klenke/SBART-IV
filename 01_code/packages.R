@@ -1,14 +1,14 @@
 # packages
-if (!require("pak")) install.packages("pak")
-if (!require("pacman")) install.packages("pacman")
+if (!require("pak", quietly = TRUE)) install.packages("pak")
+if (!require("pacman", quietly = TRUE)) install.packages("pacman")
 
 # Github packages 
-if (!require("SparseBCF")) pak::pak("albicaron/SparseBCF")
-if (!require("BayesIV")) pak::pak("fbargaglistoffi/BCF-IV")
+if (!require("SparseBCF", quietly = TRUE)) pak::pak("albicaron/SparseBCF")
+if (!require("BayesIV", quietly = TRUE)) pak::pak("fbargaglistoffi/BCF-IV")
 
 # BiocManager
 if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-BiocManager::install("BiocVersion")
+if (BiocManager::version() != "3.20") BiocManager::install("BiocVersion")
 
 # Pacman also installes CRAN packages if needed
 pacman::p_load(
