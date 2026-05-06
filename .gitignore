@@ -6,6 +6,10 @@
 .RData
 .RDataTmp
 
+# mac specific ds store files
+.DS_Store
+*.DS_Store
+
 # User-specific files
 .Ruserdata
 
@@ -57,6 +61,3 @@ renv/python/
 renv/staging/
 
 
-# mac specific ds store files
-.DS_Store
-*.DS_Store
