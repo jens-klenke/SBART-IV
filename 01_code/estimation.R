@@ -36,13 +36,15 @@ data <- tibble::tibble(
 
 # tries
 data %<>%
-  dplyr::slice_sample(n = 4)
+  dplyr::slice_sample(n = 1)
 
 #### Estimation ----
+tictoc::tic()
 sim_results <- data %>%
   dplyr::mutate(furrr::future_pmap_dfr(., wrapper_function, 
                                        .progress = TRUE,
                                        .options = furrr_options(seed = TRUE)))
+tictoc::toc()
 
 save(sim_results, file = "02_sim_results\\ef.2_co.0.75_uncorr.RData")
 # save(sim_results, file = "03_output\\ef.0.4_co.0.75_corr.RData")
