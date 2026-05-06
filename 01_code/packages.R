@@ -7,10 +7,6 @@ if (!require("bcf", quietly = TRUE)) pak::pak("jaredsmurray/bcf")
 if (!require("SparseBCF", quietly = TRUE)) pak::pak("albicaron/SparseBCF")
 if (!require("BayesIV", quietly = TRUE)) pak::pak("fbargaglistoffi/BCF-IV")
 
-# BiocManager
-if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-if (BiocManager::version() != "3.20") BiocManager::install("BiocVersion")
-
 # Pacman also installes CRAN packages if needed
 pacman::p_load(
   tibble,
