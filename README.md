@@ -27,9 +27,17 @@ source("setup.R")
 > If the installation fails for any reason, the script `packages.R` inside the folder `01_code` can be used to manually install the packages. 
 
 ### 3. Run the Analysis
-Inside the folder `01_code` there are three main scripts:
+Inside the folder `01_code` there are three main scripts to replicate simulations:
 
 - `generate_raw_data.R` simulates data 
 - `estimation.R` runs the MCMC on the simulated data, which estimates the BCF-IV and SBCF-IV models
 - `MCMC_evaluation.R` performs the evaluation of the MCMC runs
+
+Moreover, the folder `01_code` holds a script for each empirical application: 
+
+- `emp_appl_OHIE.R` for the application based on the Oregon Health Insurance Experiment dataset (Johnson et al. 2022)
+- `emp_appl_401k.R` for the application based on the 401(k) dataset (Chernozhukov et al. 2018)
+
+
+
 
