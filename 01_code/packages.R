@@ -6,6 +6,10 @@ if (!require("pacman")) install.packages("pacman")
 if (!require("SparseBCF")) pak::pak("albicaron/SparseBCF")
 if (!require("BayesIV")) pak::pak("fbargaglistoffi/BCF-IV")
 
+# BiocManager
+if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+BiocManager::install("BiocVersion")
+
 # Pacman also installes CRAN packages if needed
 pacman::p_load(
   tibble,
@@ -38,6 +42,12 @@ pacman::p_load(
   cowplot,
   glue,
   magick,
+  DoubleML, 
+  mlr3, 
+  mlr3learners,
+  ranger,
+  haven,
+  plyr,
   # Algorithms 
   BayesIV,
   SparseBCF

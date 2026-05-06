@@ -55,3 +55,8 @@ rsconnect/
 renv/library/
 renv/python/
 renv/staging/
+
+
+# mac specific ds store files
+.DS_Store
+*.DS_Store
