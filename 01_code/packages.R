@@ -2,9 +2,10 @@
 if (!require("pak", quietly = TRUE)) install.packages("pak")
 if (!require("pacman", quietly = TRUE)) install.packages("pacman")
 
-# Github packages 
-if (!require("SparseBCF", quietly = TRUE)) pak::pak("albicaron/SparseBCF")
-if (!require("BayesIV", quietly = TRUE)) pak::pak("fbargaglistoffi/BCF-IV")
+# Github packages
+if (!require("bcf")) pak::pak("jaredsmurray/bcf")
+if (!require("SparseBCF")) pak::pak("albicaron/SparseBCF")
+if (!require("BayesIV")) pak::pak("fbargaglistoffi/BCF-IV")
 
 # BiocManager
 if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager")
