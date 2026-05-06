@@ -12,13 +12,13 @@ invisible(
     source))
 
 
-# running summarize function
+# running summarize function, stored in 03_sim_eval
 MCMC_summarise("uncorr", 0.75)
 
 
-## tables and plots
+# Displaying results
 
-
+## Paper Results ----
 load(here::here('03_sim_eval/n_1000/n.1000_co.0.75_uncorr.RData'))
 
 
@@ -65,19 +65,21 @@ plot_rule_data %>%
   scale_shape_manual(values = c(2, 4)) +
   theme(legend.position = "bottom")
 
-# Figure 4.2 
-plot_ind_clas_data %>%
-  ggplot2::ggplot(aes(x = effect, y = Precision, color = model, shape = model)) +
-  geom_line(linewidth = 0.8) +
-  geom_point(size = 0.8) +
-  ylim(0, 1) +
-  facet_wrap(~ncov) +
-  labs(x = "Effect Size ($k$)", y = "Precision \n",
-       color = "Model", shape = "Model") +
-  scale_x_continuous(breaks = seq(0, 2, by = 0.4)) +
-  scale_color_manual(values  = c('#969799', '#af8209')) +
-  scale_shape_manual(values = c(2, 4))
+# 
+plot_ind_clas_data <- plot_data_cases %>%
+  dplyr::left_join(
+    ind_clf_metrics,
+    by = c('effect', 'ncov', 'model')
+  )  %>%
+  dplyr::select(-ends_with("_sd")) %>%
+  dplyr::rename_with(~gsub("_mean", "", .x, fixed = TRUE), ends_with("_mean")) %>%
+  dplyr::mutate(across(c("Recall", "Precision", "F_score", "TPR",
+                         "FNR", "FPR", "TNR"), ~ replace_na(., 0))) %>%
+  dplyr::mutate(ncov = factor(paste0('$\\bm{P = ', ncov, '}$'), levels = c('$\\bm{P = 10}$', '$\\bm{P = 50}$', '$\\bm{P = 100}$')),
+                model = ifelse(model == 'bcf_iv', 'BCF-IV', 'SBCF-IV')) %>%
+  dplyr::mutate(effect = as.numeric(effect))
 
+# Figure 4.2 
 plot_ind_clas_data %>%
   dplyr::select(model, ncov, effect, Recall, Precision, F_score, FPR) %>%
   dplyr::rename("$F$-Score" = F_score) %>%
@@ -97,7 +99,6 @@ plot_ind_clas_data %>%
   scale_x_continuous(breaks = seq(0, 2, by = 0.4)) +
   scale_color_manual(values  = c('#969799', '#af8209')) +
   scale_shape_manual(values = c(2, 4)) +
-
   theme(legend.position = "bottom")
 
 
