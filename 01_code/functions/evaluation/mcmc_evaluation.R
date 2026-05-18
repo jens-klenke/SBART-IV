@@ -1,5 +1,6 @@
 # summarise wrapper to clean memory after the analysis
-MCMC_summarise <- function(path, case, compliance, n_case = "n_1000", M = 500, ...) {
+MCMC_summarise <- function(case, compliance, N = 1e3, M = 500, 
+                           verbose = FALSE, ...) {
   
   # Function parameters
   # case - corr or uncorr
@@ -11,14 +12,16 @@ MCMC_summarise <- function(path, case, compliance, n_case = "n_1000", M = 500, .
   options(dplyr.summarise.inform = FALSE)
   
   # calling the summarise function itself
-  summarise_case_data(path, case, compliance, n_case, M = M)
+  summarise_case_data(case = case, compliance = compliance, 
+                      N = N, M = M, verbose = verbose)
   
   # clean up memory
   invisible(gc(verbose = FALSE))
 }
 
 # summarize per case
-summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 500, ...) {
+summarise_case_data <- function(case, compliance, N = 1e3, M = 500,
+                                verbose = FALSE...) {
   
   # Function parameters
   # case - corr or uncorr
@@ -29,21 +32,32 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 5
   
   # Variables
   case <- case
-  compliance_number <- as.numeric(sub("co.", "", compliance))
-  n <- as.numeric(sub("n_", "", n_case))
+  compliance_number <- compliance
+  co_compliance <- glue::glue("co.{compliance}")
+  n_folder <- glue::glue("n_{N}") # as.numeric(sub("n_", "", n_case))
+  n_case <- glue::glue("n.{N}") # as.numeric(sub("n_", "", n_case))
+  n <- N
   M <- M
   
   # load data files -----
   # path to sim_reuslts
-  sim_result_path <- here::here(path, case, compliance)
-  sim_result_path <- here::here(path) # How to store results hier? 
+  sim_result_path <- here::here("02_sim_results", n_folder)
+  
+  # saving path
+  # save path
+  saving_path <- glue::glue("03_sim_eval\\{n_folder}")
+  
+  # 
+  if(!dir.exists(saving_path)){
+    dir.create(saving_path, recursive = TRUE)
+  }
   
   if(verbose){
     cat(
     '\n\n Setting / Analysis of: \n
           Data path:', crayon::yellow(sim_result_path), '\n',
     '\t\t Case:', crayon::blue(case), '\n',
-    '\t\t Compliance:', crayon::blue(compliance_number), '\n',
+    '\t\t Compliance:', crayon::blue(compliance), '\n',
     '\t\t Observations per MCMC run:', crayon::blue(n), '\n\n\n')
   }
   
@@ -69,14 +83,12 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 5
   
   # unnest data for each effect size (NROW = 11 effects * 500 runs * 3 ncov) ----
   data %<>%
-    tidyr::unnest(data) %>%
-    #    dplyr::select(-path_in) %>%
-    dplyr::mutate(dataset_num = as.numeric(str_extract(row_num, "^[^ of]+")))
+    tidyr::unnest(data) 
   
   # wrangling data and unnest results 500 MCMCs * 2 Models * 11 Effects * 3 ncov
   data_long <- data %>%
     # important variables
-    dplyr::select(path_in, effect, ncov, dataset_num, sbcf_iv, bcf_iv) %>%
+    dplyr::select(path_in, effect, ncov, sbcf_iv, bcf_iv) %>%
     # stacking models 
     tidyr::pivot_longer(c(sbcf_iv, bcf_iv), names_to = 'model', values_to = 'results')
   
@@ -89,7 +101,7 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 5
   
   # getting ruled data
   rules_metric <- data_long %>%
-    dplyr::select(effect,  ncov, model, dataset_num, rule_results) %>%
+    dplyr::select(effect,  ncov, model, rule_results) %>%
     tidyr::unnest(rule_results) %>%
     dplyr::group_by(model, ncov, effect) %>%
     dplyr::summarise(
@@ -105,31 +117,11 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 5
   
   # subgroup metrics ----
   data_ind <- data_long %>%
-    dplyr::select(effect,  ncov, model, dataset_num, individual_results) %>%
+    dplyr::select(effect,  ncov, model, individual_results) %>%
     tidyr::unnest(individual_results)
   
   # Individual classification metrics 
   ind_clf_metrics <- data_ind %>%
-    # summary for each MCMC run
-    dplyr::group_by(model, ncov, effect, dataset_num) %>%
-    dplyr::summarise(
-      TP = sum(TP),
-      FN = sum(FN),
-      FP = sum(FP),
-      TN = sum(TN),
-      TPR = sum(TP) / sum(c(TP, FN)),
-      FNR = sum(FN) / sum(c(TP, FN)),
-      FPR = sum(FP) / sum(c(FP, TN)),
-      TNR = sum(TN) / sum(c(FP, TN)),
-      Recall = TP / (TP + TN),
-      Precision = TP / (TP + FP),
-      # harmnoic mean of precision and recall
-      F_score = TP / (TP + 0.5 * (FP + FN))
-    ) %>%
-    dplyr::mutate(
-      Precision = ifelse(is.nan(Precision), 0, Precision), 
-      Recall = ifelse(is.nan(Recall), NA, Recall)
-    ) %>%
     # summary for each effect/ ncov case 
     dplyr::group_by(model, ncov, effect) %>%
     dplyr::summarise(
@@ -146,7 +138,7 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 5
   
   # score functions ----
   subgroup_data_metrics <- data_long %>%
-    dplyr::select(effect,  ncov, model, dataset_num, subgroup_data_metrics) %>%
+    dplyr::select(effect,  ncov, model, subgroup_data_metrics) %>%
     tidyr::unnest(subgroup_data_metrics)
   
   # Metric
@@ -166,7 +158,7 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 5
   
   # separated for each subgroup ----
   subgroup_sep_data <- data_long %>%
-    dplyr::select(effect,  ncov, model, dataset_num, subgroup_sep_data) %>%
+    dplyr::select(effect,  ncov, model, subgroup_sep_data) %>%
     tidyr::unnest(subgroup_sep_data)
   
   # Metric
@@ -186,7 +178,7 @@ summarise_case_data <- function(path, case, compliance, n_case = "n_1000", M = 5
   
   # saving data
   save(rules_metric, ind_clf_metrics, subgroup_metrics, subgroup_sep_metrics,
-       file = here::here(glue::glue('03_sim_eval/{n_case}_{compliance}_{case}.RData')))
+       file = here::here(saving_path,  glue::glue('{n_case}_{co_compliance}_{case}.RData')))
   
   if(verbose){
     # safe information
