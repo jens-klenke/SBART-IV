@@ -1,12 +1,12 @@
 # load packages 
 ############## Packages ################
-source(here::here('01_code/packages.R'))
+source(here::here(file.path('01_code', 'packages.R')))
 
 # source all files in the functions folder
 invisible(
   sapply(
     list.files(
-      here::here('01_code/functions'),
+      here::here(file.path('01_code', 'functions')),
       full.names = TRUE, 
       recursive = TRUE),
     source))
@@ -35,21 +35,21 @@ invisible(
 # This dataset contains demographic characteristics that were recorded when individuals signed up for
 # the lottery and lottery selection. Some of these variables are necessary to replicate Finkelstein et al
 # 2012, Baicker et al (2013), and Taubman et al. (2014).
-descriptive <- haven::read_dta("05_emp_appl_OHIE/raw_data/oregonhie_descriptive_vars.dta")
+descriptive <- haven::read_dta(here::here(file.path('05_emp_appl_OHIE', 'raw_data', 'oregonhie_descriptive_vars.dta')))
 
 # State Program Variables:
 # This dataset contains information from the state of Oregon on individuals’ participation in the
 # following state programs: Medicaid, the Supplemental Nutrition Assistance Program (SNAP), and
 # Temporary Assistance to Needy Families (TANF). This dataset includes the insurance variables
 # necessary to replicate Finkelstein et al 2012, Baicker et al (2013), and Taubman et al. (2014).
-stateprograms<- haven::read_dta("05_emp_appl_OHIE/raw_data/oregonhie_stateprograms_vars.dta")
+stateprograms<- haven::read_dta(here::here(file.path('05_emp_appl_OHIE', 'raw_data', 'oregonhie_stateprograms_vars.dta')))
 
 # Twelve Month Mail Survey:
 # This dataset contains variables from a mail survey which began in July 2009 with intensive follow up
 # continuing until March 2010. This survey is referred to as the “Twelve Month Survey.” The survey
 # contained questions about health insurance as well as health care needs, experiences and costs. This
 # dataset includes variables necessary to replicate parts of Finkelstein et al (2012).
-survey12m <- haven::read_dta("05_emp_appl_OHIE/raw_data/oregonhie_survey12m_vars.dta")
+survey12m <- haven::read_dta(here::here(file.path('05_emp_appl_OHIE', 'raw_data', 'oregonhie_survey12m_vars.dta')))
 
 
 ### clean data 
@@ -177,7 +177,7 @@ D <- dt_resp$ohp_all_ever_firstn_30sep2009   # treatment
 Z <- dt_resp$treatment # IV
 
 # load covariate set from Johnson et al. 
-load('05_emp_appl_OHIE/raw_data/pairohieBMcontOut.RData')
+load(here::here(file.path('05_emp_appl_OHIE', 'raw_data', 'pairohieBMcontOut.RData')))
 Xbm <- pairohieBMcontOut[, !(names(pairohieBMcontOut) %in% c("Z", "pairMatched"))]
 
 

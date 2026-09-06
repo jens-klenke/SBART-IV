@@ -119,7 +119,8 @@ sbcf_iv <- function(y, w, z, x,
     p.value.root <- summary$coef[2,4]
     p.value.weak.iv.root <- summary$diagnostics[1,4]
     proportion.root <- 1
-    compliers.root <- length(which(as.vector(inference$z)==as.vector(inference$w)))/nrow(inference)
+    #compliers.root <- length(which(as.vector(inference$z)==as.vector(inference$w)))/nrow(inference)
+    compliers.root <- mean(inference$w[inference$z==1]) - mean(inference$w[inference$z==0])
     itt.root <- iv.effect.root*compliers.root
     
     # Store Results for Root
@@ -149,7 +150,8 @@ sbcf_iv <- function(y, w, z, x,
         iv.effect <-  summary$coef[2,1]
         p.value <- summary$coef[2,4]
         p.value.weak.iv <- summary$diagnostics[1,4]
-        compliers <- length(which(as.vector(subset$z)==as.vector(subset$w)))/nrow(subset)
+        #compliers <- length(which(as.vector(subset$z)==as.vector(subset$w)))/nrow(subset)
+        compliers      <- mean(subset$w[subset$z==1])      - mean(subset$w[subset$z==0])
         itt <- iv.effect*compliers
         
         # Proportion of observations in the node

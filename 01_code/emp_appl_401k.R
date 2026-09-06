@@ -1,12 +1,12 @@
 # load packages 
 ############## Packages ################
-source(here::here('01_code/packages.R'))
+source(here::here(file.path('01_code', 'packages.R')))
 
 # source all files in the functions folder
 invisible(
   sapply(
     list.files(
-      here::here('01_code/functions'),
+      here::here('01_code', 'functions'),
       full.names = TRUE, 
       recursive = TRUE),
     source))
