@@ -31,7 +31,8 @@ Inside the folder `01_code` there are three main scripts to replicate simulation
 
 - `generate_raw_data.R` simulates data 
 - `estimation.R` runs the MCMC on the simulated data, which estimates the BCF-IV and SBCF-IV models
-- `MCMC_evaluation.R` performs the evaluation of the MCMC runs
+- `MCMC_evaluation.R` performs the evaluation of the MCMC runs for the simulation study in the main paper
+- `MCMC_evaluation_appendix_ablation.R` performs the evaluation of the MCMC runs for the additional simulation in the appendix of the paper
 
 Moreover, the folder `01_code` holds a script for each empirical application: 
 
