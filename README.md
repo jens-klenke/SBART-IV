@@ -1,6 +1,6 @@
 # SBART-IV
 
-R Project to replicate the MCMC results for our paper.
+R Project to replicate the MCMC results for the paper ["Shrinkage Bayesian Causal Forest with Instrumental Variable"](https://arxiv.org/abs/2609.18903).
 
 ---
 
